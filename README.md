@@ -1,2 +1,2 @@
 # GCP-Healthcare-Project
-End-to-end GCP Data Engineering pipeline for healthcare claims processing using Dataproc, BigQuery, Cloud Storage, and PySpark.
+End-to-end healthcare claims ETL pipeline on Google Cloud Platform using PySpark, Dataproc, Cloud Storage, BigQuery, and automated data quality validation.
