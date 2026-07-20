@@ -1,7 +1,8 @@
+
 -- IN THIS WE WE WILL IMPLEMENTING BOTH SCD2 AND CDM LOGIC FOR THE SILVER TABLES
 
--- 1. Create table departments by Merge Data from Hospital A & B  
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.departments` (
+-- 1. Create table departments by Merge Data from Hospital 1 & 2  
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.departments` (
     Dept_Id STRING,
     SRC_Dept_Id STRING,
     Name STRING,
@@ -11,10 +12,10 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.departments` (
 
 
 -- 2. Truncate Silver Table Before Inserting 
-TRUNCATE TABLE `avd-databricks-demo.silver_dataset.departments`;
+TRUNCATE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.departments`;
 
 -- 3. full load by Inserting merged Data 
-INSERT INTO `avd-databricks-demo.silver_dataset.departments`
+INSERT INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.departments`
 SELECT DISTINCT 
     CONCAT(deptid, '-', datasource) AS Dept_Id,
     deptid AS SRC_Dept_Id,
@@ -25,15 +26,15 @@ SELECT DISTINCT
         ELSE FALSE 
     END AS is_quarantined
 FROM (
-    SELECT DISTINCT *, 'hosa' AS datasource FROM `avd-databricks-demo.bronze_dataset.departments_ha`
+    SELECT DISTINCT *, 'hosp1' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.departments_h1`
     UNION ALL
-    SELECT DISTINCT *, 'hosb' AS datasource FROM `avd-databricks-demo.bronze_dataset.departments_hb`
+    SELECT DISTINCT *, 'hosp2' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.departments_h2`
 );
 
 -------------------------------------------------------------------------------------------------------
 
--- 1. Create table providers by Merge Data from Hospital A & B  
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.providers` (
+-- 1. Create table providers by Merge Data from Hospital 1 & 2  
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.providers` (
     ProviderID STRING,
     FirstName STRING,
     LastName STRING,
@@ -45,10 +46,10 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.providers` (
 );
 
 -- 2. Truncate Silver Table Before Inserting 
-TRUNCATE TABLE `avd-databricks-demo.silver_dataset.providers`;
+TRUNCATE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.providers`;
 
 -- 3. full load by Inserting merged Data 
-INSERT INTO `avd-databricks-demo.silver_dataset.providers`
+INSERT INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.providers`
 SELECT DISTINCT 
     ProviderID,
     FirstName,
@@ -62,15 +63,15 @@ SELECT DISTINCT
         ELSE FALSE 
     END AS is_quarantined
 FROM (
-    SELECT DISTINCT *, 'hosa' AS datasource FROM `avd-databricks-demo.bronze_dataset.providers_ha`
+    SELECT DISTINCT *, 'hosp1' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.providers_h1`
     UNION ALL
-    SELECT DISTINCT *, 'hosb' AS datasource FROM `avd-databricks-demo.bronze_dataset.providers_hb`
+    SELECT DISTINCT *, 'hosp2' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.providers_h2`
 );
 
 -------------------------------------------------------------------------------------------------------
 
 -- 1. Create patients Table in BigQuery
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.patients` (
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.patients` (
     Patient_Key STRING,
     SRC_PatientID STRING,
     FirstName STRING,
@@ -90,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.patients` (
 );
 
 --Create a quality_checks temp table
-CREATE OR REPLACE TABLE `avd-databricks-demo.silver_dataset.quality_checks` AS
+CREATE OR REPLACE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks` AS
 SELECT DISTINCT 
     CONCAT(SRC_PatientID, '-', datasource) AS Patient_Key,
     SRC_PatientID,
@@ -120,8 +121,8 @@ FROM (
         DOB,
         Address,
         ModifiedDate,
-        'hosa' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.patients_ha`
+        'hosp1' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.patients_h1`
     
     UNION ALL
 
@@ -136,13 +137,13 @@ FROM (
         DOB,
         Address,
         ModifiedDate,
-        'hosb' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.patients_hb`
+        'hosp2' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.patients_h2`
 );
 
 -- 3. Apply SCD Type 2 Logic with MERGE
-MERGE INTO `avd-databricks-demo.silver_dataset.patients` AS target
-USING `avd-databricks-demo.silver_dataset.quality_checks` AS source
+MERGE INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.patients` AS target
+USING `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks` AS source
 ON target.Patient_Key = source.Patient_Key
 AND target.is_current = TRUE 
 
@@ -205,12 +206,12 @@ VALUES (
 );
 
 -- DROP quality_check table
-DROP TABLE IF EXISTS `avd-databricks-demo.silver_dataset.quality_checks`;
+DROP TABLE IF EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks`;
 
 -------------------------------------------------------------------------------------------------------
 
 -- 1. Create transactions Table in BigQuery
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.transactions` (
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.transactions` (
     Transaction_Key STRING,
     SRC_TransactionID STRING,
     EncounterID STRING,
@@ -241,7 +242,7 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.transactions` (
 );
 
 -- 2. Create a quality_checks temp table
-CREATE OR REPLACE TABLE `avd-databricks-demo.silver_dataset.quality_checks` AS
+CREATE OR REPLACE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks` AS
 SELECT DISTINCT 
     CONCAT(TransactionID, '-', datasource) AS Transaction_Key,
     TransactionID AS SRC_TransactionID,
@@ -271,14 +272,14 @@ SELECT DISTINCT
         ELSE FALSE
     END AS is_quarantined
 FROM (
-    SELECT DISTINCT *, 'hosa' AS datasource FROM `avd-databricks-demo.bronze_dataset.transactions_ha`
+    SELECT DISTINCT *, 'hosp1' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.transactions_h1`
     UNION ALL
-    SELECT DISTINCT *, 'hosb' AS datasource FROM `avd-databricks-demo.bronze_dataset.transactions_hb`
+    SELECT DISTINCT *, 'hosp2' AS datasource FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.transactions_h2`
 );
 
 -- 3. Apply SCD Type 2 Logic with MERGE
-MERGE INTO `avd-databricks-demo.silver_dataset.transactions` AS target
-USING `avd-databricks-demo.silver_dataset.quality_checks` AS source
+MERGE INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.transactions` AS target
+USING `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks` AS source
 ON target.Transaction_Key = source.Transaction_Key
 AND target.is_current = TRUE 
 
@@ -374,12 +375,12 @@ VALUES (
 );
 
 -- 4. DROP quality_check table
-DROP TABLE IF EXISTS `avd-databricks-demo.silver_dataset.quality_checks`;
+DROP TABLE IF EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks`;
 
 -------------------------------------------------------------------------------------------------------
 
 -- 1. Create the encounters Table in BigQuery
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.encounters` (
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.encounters` (
     Encounter_Key STRING,
     SRC_EncounterID STRING,
     PatientID STRING,
@@ -397,7 +398,7 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.encounters` (
 );
 
 -- 2. Create a quality_checks temp table for encounters
-CREATE OR REPLACE TABLE `avd-databricks-demo.silver_dataset.quality_checks_encounters` AS
+CREATE OR REPLACE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_encounters` AS
 SELECT DISTINCT 
     CONCAT(SRC_EncounterID, '-', datasource) AS Encounter_Key,
     SRC_EncounterID,
@@ -423,8 +424,8 @@ FROM (
         EncounterType,
         ProcedureCode,
         ModifiedDate,
-        'hosa' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.encounters_ha`
+        'hosp1' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.encounters_h1`
     
     UNION ALL
 
@@ -437,13 +438,13 @@ FROM (
         EncounterType,
         ProcedureCode,
         ModifiedDate,
-        'hosb' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.encounters_hb`
+        'hosp2' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.encounters_h2`
 );
 
 -- 3. Apply SCD Type 2 Logic with MERGE
-MERGE INTO `avd-databricks-demo.silver_dataset.encounters` AS target
-USING `avd-databricks-demo.silver_dataset.quality_checks_encounters` AS source
+MERGE INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.encounters` AS target
+USING `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_encounters` AS source
 ON target.Encounter_Key = source.Encounter_Key
 AND target.is_current = TRUE 
 
@@ -500,12 +501,12 @@ VALUES (
 );
 
 -- 4. DROP quality_check table
-DROP TABLE IF EXISTS `avd-databricks-demo.silver_dataset.quality_checks_encounters`;
+DROP TABLE IF EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_encounters`;
 
 -------------------------------------------------------------------------------------------------------
 
 -- 1. Create the Claims Table in BigQuery
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.claims` (
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.claims` (
     Claim_Key STRING,
     SRC_ClaimID STRING,
     TransactionID STRING,
@@ -533,7 +534,7 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.claims` (
 );
 
 -- 2. Create a quality_checks temp table for claims
-CREATE OR REPLACE TABLE `avd-databricks-demo.silver_dataset.quality_checks_claims` AS
+CREATE OR REPLACE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_claims` AS
 SELECT 
     CONCAT(SRC_ClaimID, '-', datasource) AS Claim_Key,
     SRC_ClaimID,
@@ -579,13 +580,13 @@ FROM (
         Copay,
         InsertDate,
         ModifiedDate,
-        'hosa' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.claims`
+        'hosp1' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.claims`
 );
 
 -- 3. Apply SCD Type 2 Logic with MERGE
-MERGE INTO `avd-databricks-demo.silver_dataset.claims` AS target
-USING `avd-databricks-demo.silver_dataset.quality_checks_claims` AS source
+MERGE INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.claims` AS target
+USING `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_claims` AS source
 ON target.Claim_Key = source.Claim_Key
 AND target.is_current = TRUE 
 
@@ -671,12 +672,12 @@ VALUES (
 );
 
 -- 4. DROP quality_check table
-DROP TABLE IF EXISTS `avd-databricks-demo.silver_dataset.quality_checks_claims`;
+DROP TABLE IF EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_claims`;
 
 -------------------------------------------------------------------------------------------------------
 
 -- 1. Create the CP Codes Silver Table in BigQuery
-CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.cpt_codes` (
+CREATE TABLE IF NOT EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.cpt_codes` (
     CP_Code_Key STRING,
     procedure_code_category STRING,
     cpt_codes STRING,
@@ -690,7 +691,7 @@ CREATE TABLE IF NOT EXISTS `avd-databricks-demo.silver_dataset.cpt_codes` (
 );
 
 -- 2. Create a quality_checks temp table for CP Codes
-CREATE OR REPLACE TABLE `avd-databricks-demo.silver_dataset.quality_checks_cpt_codes` AS
+CREATE OR REPLACE TABLE `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_cpt_codes` AS
 SELECT 
     CONCAT(cpt_codes, '-', datasource) AS CP_Code_Key,
     procedure_code_category,
@@ -709,13 +710,13 @@ FROM (
         cpt_codes,
         procedure_code_descriptions,
         code_status,
-        'hosa' AS datasource
-    FROM `avd-databricks-demo.bronze_dataset.cpt_codes`
+        'hosp1' AS datasource
+    FROM `project-819f30a6-533e-44c8-a6e.bronze_dataset.cpt_codes`
 );
 
 -- 3. Apply SCD Type 2 Logic with MERGE
-MERGE INTO `avd-databricks-demo.silver_dataset.cpt_codes` AS target
-USING `avd-databricks-demo.silver_dataset.quality_checks_cpt_codes` AS source
+MERGE INTO `project-819f30a6-533e-44c8-a6e.silver_dataset.cpt_codes` AS target
+USING `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_cpt_codes` AS source
 ON target.CP_Code_Key = source.CP_Code_Key
 AND target.is_current = TRUE 
 
@@ -760,5 +761,5 @@ VALUES (
 );
 
 -- 4. DROP quality_check table
-DROP TABLE IF EXISTS `avd-databricks-demo.silver_dataset.quality_checks_cpt_codes`;
+DROP TABLE IF EXISTS `project-819f30a6-533e-44c8-a6e.silver_dataset.quality_checks_cpt_codes`;
  

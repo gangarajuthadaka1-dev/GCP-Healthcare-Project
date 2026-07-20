@@ -7,19 +7,19 @@ spark = SparkSession.builder \
                     .getOrCreate()
 
 # configure variables
-BUCKET_NAME = "healthcare-bucket-22032025"
+BUCKET_NAME = "healthcare-bucket-16072026"
 CLAIMS_BUCKET_PATH = f"gs://{BUCKET_NAME}/landing/claims/*.csv"
-BQ_TABLE = "avd-databricks-demo.bronze_dataset.claims"
+BQ_TABLE = "project-819f30a6-533e-44c8-a6e.bronze_dataset.claims"
 TEMP_GCS_BUCKET = f"{BUCKET_NAME}/temp/"
 
-# read from claims source
+# read claims from  source
 claims_df = spark.read.csv(CLAIMS_BUCKET_PATH, header=True)
 
 # adding hospital source for future reference
 claims_df = (claims_df
                 .withColumn("datasource", 
-                              when(input_file_name().contains("hospital2"), "hosb")
-                             .when(input_file_name().contains("hospital1"), "hosa").otherwise("None")))
+                              when(input_file_name().contains("hospital2"), "hosp2")
+                             .when(input_file_name().contains("hospital1"), "hosp1").otherwise("None")))
 
 # dropping dupplicates if any
 claims_df = claims_df.dropDuplicates()

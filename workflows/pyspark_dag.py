@@ -1,3 +1,4 @@
+
 # import all modules
 import airflow
 from airflow import DAG
@@ -10,19 +11,19 @@ from airflow.providers.google.cloud.operators.dataproc import (
 )
 
 # define the variables
-PROJECT_ID = "avd-databricks-demo"
+PROJECT_ID = "project-819f30a6-533e-44c8-a6e"
 REGION = "us-east1"
 CLUSTER_NAME = "my-demo-cluster"
 COMPOSER_BUCKET = "us-central1-demo-instance-a649b781-bucket" ## change this 
 
-GCS_JOB_FILE_1 = f"gs://{COMPOSER_BUCKET}/data/INGESTION/hospitalA_mysqlToLanding.py"
+GCS_JOB_FILE_1 = f"gs://{COMPOSER_BUCKET}/data/INGESTION/Hospital1MySQLToLanding.py"
 PYSPARK_JOB_1 = {
     "reference": {"project_id": PROJECT_ID},
     "placement": {"cluster_name": CLUSTER_NAME},
     "pyspark_job": {"main_python_file_uri": GCS_JOB_FILE_1},
 }
 
-GCS_JOB_FILE_2 = f"gs://{COMPOSER_BUCKET}/data/INGESTION/hospitalB_mysqlToLanding.py"
+GCS_JOB_FILE_2 = f"gs://{COMPOSER_BUCKET}/data/INGESTION/Hospital2MySQLToLanding.py"
 PYSPARK_JOB_2 = {
     "reference": {"project_id": PROJECT_ID},
     "placement": {"cluster_name": CLUSTER_NAME},
@@ -45,7 +46,7 @@ PYSPARK_JOB_4 = {
 
 
 ARGS = {
-    "owner": "SHAIK SAIDHUL",
+    "owner": "Gangaraju Thadaka",
     "start_date": None,
     "depends_on_past": False,
     "email_on_failure": False,

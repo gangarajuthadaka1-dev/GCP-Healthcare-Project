@@ -1,4 +1,4 @@
--- For database hospital_a_db:
+-- For database supreme_hosp1_db:
 
 -- 1. Departments Table:
 
